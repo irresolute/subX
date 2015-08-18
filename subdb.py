@@ -1,9 +1,9 @@
-'''To get the first 64 bit and last 64 bit of the video file and hash it  '''
 import hashlib
 import os
 import dialog
 import requests
 
+# To make hash of the intended video file 
 def get_hash(name):
 	readsize = 1024*64
 	with open(name,'rb') as f:
@@ -14,31 +14,23 @@ def get_hash(name):
 	return hashlib.md5(data).hexdigest()
 
 
-#actions pert	aining to the subDB api
 
+#use of subDB api
 def api(file_add):
-	#file_hash = get_hash(file_name)
 	file_hash = hashlib.md5()
 	file_hash = get_hash(file_add)
-	print file_hash	
+	user_agent = {'User-agent':'SubDB/1.0 (subX/0.1; http://github.com/irresolute/subX)'}
+	param  ={'action':'download','hash':file_hash,'language':'en'}
+	try:
+		r = requests.get("http://api.thesubdb.com/",headers=user_agent,params=param)
+	except:
+		pass
+	if(r.status_code !=200):	
+		dialog.showmsg('Subtitle not found check connectivity and try again','subX')
 
-	User_Agent = {'user-agent':'SubDB/1.0 (subX/0.1; http://github.com/irresolute/subX)'}
-	urlparams  ={'actions':'download','hash':file_hash,'language':'en'}
-	#making the download request from the subDB
-	
-	r = requests.get('http://api.thesubdb.com/',headers=User_Agent,params=urlparams)
-	print r.encoding
-	
-	print r.encoding
-	print r.status_code
-	print r.content
-	print r.text.encode('ascii','ignore')
 	fName, fExt = os.path.splitext(file_add)
-	fName = fName + '.srt'
+	fName = fName+ '.srt'
 	with open(fName,'wb') as f:
     	 f.write(r.text.encode('ascii','ignore'))
-    #print r.status_code
-    #open(fName,'r')
-
 file_add = dialog.ask(message='Enter address')
 api(file_add)
